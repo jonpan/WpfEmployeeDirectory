@@ -20,7 +20,8 @@ namespace WpfEmployeeDirectory.ViewModels
         /// Add and edit employee data, ultimately one screen has a grid of all employees to select an employee the edit
         /// Add button goes to an empty edit screen to allow entry of new employee data
         /// </summary>
-        static String dbConnectionString = "Data Source=DELL-FMQG6PQP5D\\SQLEXPRESS;Initial Catalog=EmployeeDB;Integrated Security=True";
+
+        static String dbConnectionString; 
         SqlConnection conn;
         SqlCommand sqlCommand;
         SqlDataAdapter sqlAdapter;
@@ -61,7 +62,7 @@ namespace WpfEmployeeDirectory.ViewModels
         // constructor
         public EmployeeViewModel()
         {
-
+            dbConnectionString = Properties.Settings.Default.DBConnectionString;
             // initialize button enable logic
             bCanDelete = false;
             bCanAdd = true;
