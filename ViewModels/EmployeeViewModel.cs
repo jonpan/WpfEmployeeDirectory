@@ -42,6 +42,7 @@ namespace WpfEmployeeDirectory.ViewModels
         public string txtSelectedEmployee { get; set; }
         public string txtFirstName { get; set; }
         public string txtLastName { get; set; }
+        public string txtTitle { get; set; }
         public string txtStartDate { get; set; }
         //public Employee SelectedItem.
         public int SelectedItem
@@ -76,9 +77,11 @@ namespace WpfEmployeeDirectory.ViewModels
             UpdateEmployee = new UpdateEmployeeCommand(this);
             DeleteEmployee = new DeleteEmployeeCommand(this);
             CancelChanges = new CancelChangesCommand(this);
-            
+
             // retrieve employee list and populate DataGrid control            
             FillDataGrid();
+            SelectedItem = -1;
+            OnPropertyChanged("SelectedItem");
 
         }
 
@@ -156,18 +159,14 @@ namespace WpfEmployeeDirectory.ViewModels
                         employeeID = Convert.ToInt32(row[0].ToString()),
                         firstName = row[1].ToString(),
                         lastName = row[2].ToString(),
-                        startDate = (Convert.ToDateTime(row[3].ToString()).ToShortDateString())
+                        title = row[3].ToString(),
+                        startDate = (Convert.ToDateTime(row[4].ToString()).ToShortDateString())
                     });
                 }
 
                 // SelectedItem is triggered/reset after the DataGrid is reloaded, set selected item to the edited or added item after reload
                 // -Improvement- scroll the DataGrid to the Selected item
-                SelectedItem = currEmployeeIndex;
-                // trigger relocation to either the edited employee or the added one
-                if(SelectedItem >= 0 && SelectedItem < employees.Count)
-                {
-                    OnPropertyChanged("SelectedItem");
-                }
+
 
             }
             catch (Exception ex)
@@ -208,9 +207,11 @@ namespace WpfEmployeeDirectory.ViewModels
             //load edit fields with current employee details
             txtFirstName = employees[SelectedItem].firstName;
             txtLastName = employees[SelectedItem].lastName;
+            txtTitle = employees[SelectedItem].title;
             txtStartDate = employees[SelectedItem].startDate;
             OnPropertyChanged("txtFirstName");
             OnPropertyChanged("txtlastName");
+            OnPropertyChanged("txtTitle");
             OnPropertyChanged("txtStartDate");
  
         }
@@ -222,15 +223,20 @@ namespace WpfEmployeeDirectory.ViewModels
                 {
                     conn = new SqlConnection(dbConnectionString);
                     conn.Open();
-                    sqlCommand = new SqlCommand("insert into dbo.EmployeeInfo (firstName, lastName, startDate) values (@fn, @ln, @sd)", conn);
+                    sqlCommand = new SqlCommand("insert into dbo.EmployeeInfo (firstName, lastName, title, startDate) values (@fn, @ln, @tl, @sd)", conn);
                     sqlCommand.Parameters.AddWithValue("@fn", txtFirstName);
                     sqlCommand.Parameters.AddWithValue("@ln", txtLastName);
+                    sqlCommand.Parameters.AddWithValue("@tl", txtTitle);
                     sqlCommand.Parameters.AddWithValue("@sd", txtStartDate);
                     int a = sqlCommand.ExecuteNonQuery();
                     if (a == 1)
                     {
+                        // get all employees and populate DataGrid
+                        FillDataGrid();
                         // if successful set the selected item to the one that was just added.
-                        currEmployeeIndex = employees.Count;
+                        // index zero based 
+                        currEmployeeIndex = employees.Count-1;
+                        MessageBox.Show("Employee: " + employees[currEmployeeIndex].fullName + " Successfully Added...");                    
                     }
 
                 }
@@ -239,17 +245,20 @@ namespace WpfEmployeeDirectory.ViewModels
 
                     conn = new SqlConnection(dbConnectionString);
                     conn.Open();
-                    sqlCommand = new SqlCommand("update dbo.EmployeeInfo set firstName=@fn, lastName=@ln, startDate=@sd where ID=@id", conn);
+                    sqlCommand = new SqlCommand("update dbo.EmployeeInfo set firstName=@fn, lastName=@ln, title=@tl, startDate=@sd where employeeID=@id", conn);
                     sqlCommand.Parameters.AddWithValue("@fn", txtFirstName);
                     sqlCommand.Parameters.AddWithValue("@ln", txtLastName);
+                    sqlCommand.Parameters.AddWithValue("@tl", txtTitle);
                     sqlCommand.Parameters.AddWithValue("@sd", txtStartDate);
                     sqlCommand.Parameters.AddWithValue("@id", employees[SelectedItem].employeeID.ToString());
                     int a = sqlCommand.ExecuteNonQuery();
                     if (a == 1)
                     {
-                        //MessageBox.Show("Database update successful");
+                        // get all employees and populate DataGrid
+                        currEmployeeIndex = SelectedItem;
+                        FillDataGrid();
+                        MessageBox.Show("Employee: " + employees[currEmployeeIndex].fullName + " Successfully Updated...");
                     }
-                    currEmployeeIndex = SelectedItem;
 
                 }
             }
@@ -262,16 +271,11 @@ namespace WpfEmployeeDirectory.ViewModels
                 conn.Close();
                 conn.Dispose();
             }
-
-            // get all employees and populate DataGrid
-            FillDataGrid();
-
+            // Load fields with affected employee information
+            SelectedItem = currEmployeeIndex;
+            OnPropertyChanged("SelectedItem");
             // set button logic
-            bCanCancel = false;
-            bCanUpdate = false;
-            bCanAdd = true;
-            bCanEdit = false;
-            bCanDelete = false;
+            SetButtonsSelected();
         }
         public void RemoveEmployee()
         {
@@ -283,15 +287,18 @@ namespace WpfEmployeeDirectory.ViewModels
                     return;
                 }
                 else
-                { 
+                {
+                    string deletedEmployee = employees[SelectedItem].fullName;
                     conn = new SqlConnection(dbConnectionString);
                     conn.Open();
-                    sqlCommand = new SqlCommand("delete from dbo.EmployeeInfo where ID=@id", conn);
+                    sqlCommand = new SqlCommand("delete from dbo.EmployeeInfo where employeeID=@id", conn);
                     sqlCommand.Parameters.AddWithValue("@id", employees[SelectedItem].employeeID.ToString());
                     int a = sqlCommand.ExecuteNonQuery();
                     if (a == 1)
                     {
-                        //MessageBox.Show("Database update successful");
+                        MessageBox.Show("Employee: " + deletedEmployee + " Successfully Deleted...");
+                        SelectedItem = -1;
+                        OnPropertyChanged("SelectedItem");
                     }
                 }
             }
@@ -307,29 +314,17 @@ namespace WpfEmployeeDirectory.ViewModels
             FillDataGrid();
 
             //Set button logic
-            bCanCancel = false;
-            bCanUpdate = false;
-            bCanAdd = true;
-            bCanEdit = false;
-            bCanDelete = false;
+            SetButtonsNotSelected();
 
             //set field values
-            txtFirstName = "-none-";
-            txtLastName = "-none-";
-            txtStartDate = "-none-";
-            OnPropertyChanged("txtFirstName");
-            OnPropertyChanged("txtLastName");
-            OnPropertyChanged("txtStartDate");
-
+            ClearTextFields("-none-");
 
         }
         public void CancelUpdate()
         {
-            bCanCancel = false;
-            bCanUpdate = false;
-            bCanEdit = false;
-            bCanAdd = true;
 
+            // set button logic
+            SetButtonsSelected();
             //set field values
             ClearTextFields( "-none-");
         }
@@ -337,29 +332,51 @@ namespace WpfEmployeeDirectory.ViewModels
         {
             if (SelectedItem >= 0 && SelectedItem < employees.Count)
             {
-                //txtSelectedEmployee = SelectedItem.fullName + "(ID: " + SelectedItem.employeeID + ", Started: " + SelectedItem.startDate + ")";
-                txtSelectedEmployee = employees[SelectedItem].fullName + "(ID: " + employees[SelectedItem].employeeID + ", Started: " + employees[SelectedItem].startDate + ")";
+                txtSelectedEmployee = employees[SelectedItem].fullName + "(ID: " + employees[SelectedItem].employeeID + ", Title: " + employees[SelectedItem].title + ", Started: " + employees[SelectedItem].startDate + ")";
                 OnPropertyChanged("txtSelectedEmployee");
 
                 // set button logic
-                bCanCancel = false;
-                bCanUpdate = false;
-                bCanAdd = true;
-                bCanEdit = true;
-                bCanDelete = true;
-
-                ClearTextFields("-none-");
+                SetButtonsSelected();
             }
+            else
+            {
+                txtSelectedEmployee = "";
+                OnPropertyChanged("txtSelectedEmployee");
+                //set button logic
+                SetButtonsNotSelected();
+            }
+            ClearTextFields("-none-");
+
         }
         public void ClearTextFields(String str)
         {
             //set field values
             txtFirstName = str;
             txtLastName = str;
+            txtTitle = str;
             txtStartDate = str;
             OnPropertyChanged("txtFirstName");
             OnPropertyChanged("txtLastName");
+            OnPropertyChanged("txtTitle");
             OnPropertyChanged("txtStartDate");
+        }
+        public void SetButtonsNotSelected()
+        {
+            bCanCancel = false;
+            bCanUpdate = false;
+            bCanAdd = true;
+            bCanEdit = false;
+            bCanDelete = false;
+
+        }
+
+        public void SetButtonsSelected()
+        {
+            bCanCancel = false;
+            bCanUpdate = false;
+            bCanAdd = true;
+            bCanEdit = true;
+            bCanDelete = true;
         }
 
 

@@ -17,12 +17,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
             <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="*" />
+           <ColumnDefinition Width="*" />
             <ColumnDefinition Width="20" />
         </Grid.ColumnDefinitions>
  
@@ -37,12 +32,11 @@
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
 
-        <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" FontSize="36" Content="Employee Directory:"/>
-        <Label Grid.Row="2" Grid.Column="1" Margin="20,10,10,5" Content="Employee:"/>
-        <TextBox Grid.Row="2" Grid.Column="2" Margin="5,10,10,5" Grid.ColumnSpan="4
-                 " Text="{Binding txtSelectedEmployee}"/>
+        <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" FontSize="36" Content="Employee Directory:"/>
+        <Label Grid.Row="2" Grid.Column="1" Margin="5,10,10,5" Content="Employee:"/>
+        <TextBox Grid.Row="2" Grid.Column="2" Margin="5,10,10,5" Text="{Binding txtSelectedEmployee}"/>
         <DataGrid Grid.Row="3" Grid.Column="1" x:Name="EmpDataGrid" Margin="20,10,10,20" MinHeight="250" MaxHeight="250"
-             Grid.ColumnSpan="6"  ItemsSource="{Binding employees}" SelectedIndex="{Binding SelectedItem, Mode=TwoWay}"
+             Grid.ColumnSpan="2"  ItemsSource="{Binding employees}" SelectedIndex="{Binding SelectedItem, Mode=TwoWay}"
                   IsReadOnly="True" AutoGenerateColumns="False" >
             <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell" x:Name="CStyle">
@@ -54,11 +48,11 @@
                 <DataGridTextColumn Header="ID" Binding="{Binding employeeID}"/>
                 <DataGridTextColumn Header="First Name" Binding="{Binding firstName}"/>
                 <DataGridTextColumn Header="Last Name" Binding="{Binding lastName}"/>
+                <DataGridTextColumn Header="Title" Binding="{Binding title}"/>
                 <DataGridTextColumn Header="Start Date" Binding="{Binding startDate}"/>
-                <DataGridTextColumn Header="Full Name" Binding="{Binding fullName}"/>
             </DataGrid.Columns>
             </DataGrid>
-        <Grid Grid.Row ="6" Grid.Column="1" Grid.ColumnSpan="6" Margin="20,20,20,20">
+        <Grid Grid.Row ="6" Grid.Column="1" Grid.ColumnSpan="7" Margin="20,20,20,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="auto"/>
@@ -85,12 +79,30 @@
                     Margin="10,0,10,0" HorizontalAlignment="Center" VerticalAlignment="Center"
                     x:Name="btnCancel" Content="Cancel" Command="{Binding CancelChanges}"/>
         </Grid>
-        <Label Grid.Row="5" Grid.Column="1" Margin="5,10,10,5" Content="First Name:"/>
-        <TextBox Grid.Row="5" Grid.Column="2" Margin="5,10,10,5" MinWidth="100" Text="{Binding txtFirstName}"/>
-        <Label Grid.Row="5" Grid.Column="3" Margin="5,10,10,5" Content="Last Name:"/>
-        <TextBox Grid.Row="5" Grid.Column="4" Margin="5,10,10,5" MinWidth="100" Text="{Binding txtLastName}"/>
-        <Label Grid.Row="5" Grid.Column="5" Margin="5,10,10,5" Content="Start Date:"/>
-        <TextBox Grid.Row="5" Grid.Column="6" Margin="5,10,10,5" MinWidth="100" Text="{Binding txtStartDate}"/>
+        <Grid Grid.Row ="5" Grid.Column="1" Grid.ColumnSpan="7">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+
+            <Label Grid.Row="0" Grid.Column="0" Margin="5,10,0,5" Content="First:"/>
+            <TextBox Grid.Row="0" Grid.Column="1" Margin="5,10,10,5" MinWidth="100" Text="{Binding txtFirstName}"/>
+            <Label Grid.Row="0" Grid.Column="2" Margin="5,10,0,5" Content="Last:"/>
+            <TextBox Grid.Row="0" Grid.Column="3" Margin="5,10,10,5" MinWidth="100" Text="{Binding txtLastName}"/>
+            <Label Grid.Row="0" Grid.Column="4" Margin="5,10,0,5" Content="Title:"/>
+            <TextBox Grid.Row="0" Grid.Column="5" Margin="5,10,10,5" MinWidth="100" Text="{Binding txtTitle}"/>
+            <Label Grid.Row="0" Grid.Column="6" Margin="5,10,0,5" Content="Start Date:"/>
+            <TextBox Grid.Row="0" Grid.Column="7" Margin="5,10,10,5" MinWidth="100" Text="{Binding txtStartDate}"/>
+        </Grid>
 
     </Grid>
 </Window>

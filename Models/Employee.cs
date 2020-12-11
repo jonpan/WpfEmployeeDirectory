@@ -10,6 +10,7 @@ namespace WpfEmployeeDirectory.Models
     {
         private string _FirstName;
         private string _LastName;
+        private string _Title;
         public int employeeID { get; set; }
         public String firstName 
         { 
@@ -31,6 +32,18 @@ namespace WpfEmployeeDirectory.Models
             set
             {
                 _LastName = value;
+            }
+        }
+
+        public String title
+        {
+            get
+            {
+                return _Title;
+            }
+            set
+            {
+                _Title = value;
             }
         }
         public String startDate { get; set; }
